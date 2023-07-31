@@ -67,7 +67,7 @@ log.debug(owner_guilds)
 client = commands.Bot(help_command=None, command_prefix="!", intents=discord.Intents.none())  # Setting prefix
 
 _embed_template = discord.Embed(
-    title="Title!",
+    title="Match",
     color=embed_color,
     url=embed_url
 )

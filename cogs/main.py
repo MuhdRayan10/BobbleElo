@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from backend import log, embed_template, error_template, gen_game_id
+from backend import log, embed_template, error_template, gen_game_id, InitializeGame
 
 class Main(commands.Cog):
     def __init__(self, bot):
@@ -13,16 +13,19 @@ class Main(commands.Cog):
 
         game_id = gen_game_id()
 
-        embed = embed_template()
-        embed.title = "Create Game"
-        embed.description = ""
+        embed = discord.Embed(title="Match", description=f"Match started by <@{interaction.user.id}>")
+        embed.add_field(name="ㅤㅤTeam 1", value=" 🤖  Player 1\n 👾  Player 2")
+        embed.add_field(name="ㅤvs", value="ㅤㅤㅤㅤ")
+        embed.add_field(name="Team 2", value="Player 3  🥷\nPlayer 4  🎃")
 
+        embed.set_footer(text="Made with <3 by muhdrayan & rajdave")
 
+        view = InitializeGame(interaction.user.id)
 
+        view.msg = await interaction.folowup.send(embed=embed, view=view)
 
+    
 
-
-        await interaction.folowup.send(embed=embed)
 
 async def setup(bot):
     await bot.add_cog(Main(bot))
