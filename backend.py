@@ -3,6 +3,7 @@ import discord
 import logging
 import sys
 from discord.ext import commands
+from discord.ui import Button, View
 from colorlog import ColoredFormatter
 
 # Loading config.ini
@@ -83,3 +84,54 @@ def error_template(description: str) -> discord.Embed:
 
     return _error_template.copy()
 
+
+"""
+    BUTTON CLASSES
+"""
+
+
+class InitializeGame(View):
+
+    def __init__(self, creator):
+        self.team1, self.team2 = set(), set()
+        self.creator = creator
+    @discord.ui.button(label="Team A", style=discord.ButtonStyle.blue)
+    async def join_team1(self, interaction, button):
+        if len(self.team1) < 4:
+            self.team1.add(interaction.response.author)
+        else:
+            button.disabled = True
+
+
+        self.update_embed()
+
+    @discord.ui.button(label="Team B", style=discord.ButtonStyle.blue)
+    async def join_team2(self, interaction, button):
+        if len(self.team2) < 4:
+            self.team2.add(interaction.user)
+        else:
+            button.disabled = True
+
+        await self.update_embed()
+
+    async def update_embed(self):
+        embed = discord.Embed()
+        # TO DO: represent teams here
+
+        self.msg = await self.msg.edit(embed=embed)
+
+    @discord.ui.button(label="Start Game", style=discord.ButtonStyle.green)
+    async def start_game(self, interaction, _):
+        if interaction.user.id != self.creator:
+            await interaction.response.send_message("Shh, only the person who created this match can start the game!", ephemeral=True)
+            return
+
+        pass
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
+    async def cancel_game(self):
+        if interaction.user.id != self.creator:
+            await interaction.response.send_message("Shh, only the person who created this match can cancel the game!", ephemeral=True)
+            return
+
+        await self.msg.delete()
