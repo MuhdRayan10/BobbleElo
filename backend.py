@@ -130,7 +130,7 @@ class InitializeGame(View):
         pass
 
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
-    async def cancel_game(self):
+    async def cancel_game(self, interaction, _):
         if interaction.user.id != self.creator:
             await interaction.response.send_message("Shh, only the person who created this match can cancel the game!", ephemeral=True)
             return
