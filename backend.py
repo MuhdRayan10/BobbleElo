@@ -12,7 +12,7 @@ import string
 config = configparser.ConfigParser()
 
 try:
-    config.read('data/config.ini')
+    config.read('config.ini')
 except Exception as e:
     print("Error reading the config.ini file. Error: " + str(e))
     sys.exit()
@@ -64,7 +64,7 @@ log.debug(owner_ids)
 owner_guilds = tuple([int(i) for i in owner_guilds])
 log.debug(owner_guilds)
 
-client = commands.Bot(help_command=None, command_prefix="!", intents=discord.Intents.none())  # Setting prefix
+client = commands.Bot(help_command=None, command_prefix="+", intents=discord.Intents.none(), application_id="1135592064852181062")  # Setting prefix
 
 _embed_template = discord.Embed(
     title="Match",
@@ -96,7 +96,7 @@ class InitializeGame(View):
     def __init__(self, creator):
         self.team1, self.team2 = set(), set()
         self.creator = creator
-    @discord.ui.button(label="Team A", style=discord.ButtonStyle.blue)
+    @discord.ui.button(label="Team A", style=discord.ButtonStyle.primary)
     async def join_team1(self, interaction, button):
         if len(self.team1) < 4:
             self.team1.add(interaction.response.author)
@@ -106,7 +106,7 @@ class InitializeGame(View):
 
         self.update_embed()
 
-    @discord.ui.button(label="Team B", style=discord.ButtonStyle.blue)
+    @discord.ui.button(label="Team B", style=discord.ButtonStyle.primary)
     async def join_team2(self, interaction, button):
         if len(self.team2) < 4:
             self.team2.add(interaction.user)

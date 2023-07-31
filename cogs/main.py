@@ -24,7 +24,11 @@ class Main(commands.Cog):
 
         view.msg = await interaction.folowup.send(embed=embed, view=view)
 
-    
+    @commands.command()
+    async def sync(self, ctx):
+        fmt = await ctx.bot.tree.sync()
+
+        await ctx.send(f"Synced {len(fmt)} commands.")
 
 
 async def setup(bot):

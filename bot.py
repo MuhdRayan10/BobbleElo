@@ -2,6 +2,7 @@ import os
 import sys
 from backend import client, discord_token, log
 import discord
+from discord import app_commands
 
 
 @client.event
@@ -13,6 +14,9 @@ async def load_cogs():
     for file in os.listdir('./cogs'):
         if file.endswith('.py'):
             await client.load_extension(f'cogs.{file[:-3]}')
+
+
+    await client.tree.sync()
 
 import asyncio
 asyncio.run(load_cogs())
