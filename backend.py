@@ -5,6 +5,8 @@ import sys
 from discord.ext import commands
 from discord.ui import Button, View
 from colorlog import ColoredFormatter
+import random
+import string
 
 # Loading config.ini
 config = configparser.ConfigParser()
@@ -155,3 +157,5 @@ def calculate_team_rating(team1, team2, result):
 
     return [round(change1+p) for p in team1], [round(change2+p) for p in team2]
 
+def gen_game_id():
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
