@@ -9,10 +9,10 @@ class Main(commands.Cog):
 
     @app_commands.command(name="create-game")
     async def create_game(self, interaction):
-        await interaction.response.defer()
+        print("e")
 
-        game_id = gen_game_id()
 
+        embed = embed_template()
         embed = discord.Embed(title="Match", description=f"Match started by <@{interaction.user.id}>")
         embed.add_field(name="ㅤㅤTeam 1", value=" 🤖  Player 1\n 👾  Player 2")
         embed.add_field(name="ㅤvs", value="ㅤㅤㅤㅤ")
@@ -20,15 +20,16 @@ class Main(commands.Cog):
 
         embed.set_footer(text="Made with <3 by muhdrayan & rajdave")
 
-        view = InitializeGame(interaction.user.id)
+        embed.title = "Create Game"
 
-        view.msg = await interaction.folowup.send(embed=embed, view=view)
+        print(interaction)
 
-    @commands.command()
-    async def sync(self, ctx):
-        fmt = await ctx.bot.tree.sync()
 
-        await ctx.send(f"Synced {len(fmt)} commands.")
+        await interaction.response.send_message(embed=embed)
+        view = InitializeGame(interaction.user.id, (await interaction.original_response()))
+
+        print("a")
+        await interaction.edit_original_response(embed=embed, view=view)
 
 
 async def setup(bot):
