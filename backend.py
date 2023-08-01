@@ -99,8 +99,8 @@ try:
         c.execute("SELECT userid FROM elo")
         users = [u[0] for u in c.fetchall()]
 
-        for user in users:
-            if user not in ratings:
+        for user in userids:
+            if user not in users:
                 c.execute("INSERT INTO elo values(?,?)", (user, 1500))
 
         db.commit()
@@ -146,15 +146,18 @@ try:
             super().__init__(*items)
             self.msg = msg
 
+            print('view initialized')
+
             self.team1 = {d:0 for d in team1}
             self.team2 = {d:0 for d in team2}
 
         @discord.ui.button(label="Winner A", style=discord.ButtonStyle.blurple)
         async def winner_a(self, interaction, button):
-            if interaction in self.team1:
-                self.team1[interaction] = 1
+            print('a by', interaction.user.id)
+            if interaction.user.id in self.team1:
+                self.team1[interaction.user.id] = 1
             else:
-                self.team2[interaction] = 1
+                self.team2[interaction.user.id] = 1
 
             winner = self.check_winner()
 
@@ -177,10 +180,10 @@ try:
 
         @discord.ui.button(label="Winner B", style=discord.ButtonStyle.blurple)
         async def winner_b(self, interaction, button):
-            if interaction in self.team1:
-                self.team1[interaction] = 2
+            if interaction.user.id in self.team1:
+                self.team1[interaction.user.id] = 2
             else:
-                self.team2[interaction] = 2
+                self.team2[interaction.user.id] = 2
 
             winner = self.check_winner()
             if winner:
@@ -189,7 +192,7 @@ try:
         async def update_embed(self, w, team1, team2):
             embed = embed_template()
 
-            embed.title(f"Team {'A' if w else 'B'}")
+            embed.title(f"Team {'A' if w else 'B'} wins!!!")
 
             t1, t2 = list(self.team1.keys()), list(self.team2.keys())
             embed.add_field(name="Team A", value=f'\n{"⬆️" if w == 1 else "⬇️"}'.join([f'<@{t1[x]}> (`{team1[x]}`)' for x in range(len(t1))]))
@@ -269,6 +272,7 @@ try:
                 await interaction.response.send_message("You need at least 1 players in each team to start the game!", ephemeral=True)
                 return
 
+            print('starting game?')
 
             await self.msg.edit(view=Game(self.team1, self.team2, self.msg))
 
