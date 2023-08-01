@@ -15,9 +15,6 @@ async def load_cogs():
         if file.endswith('.py'):
             await client.load_extension(f'cogs.{file[:-3]}')
 
-
-    await client.tree.sync()
-
 import asyncio
 asyncio.run(load_cogs())
 

@@ -72,7 +72,7 @@ try:
     owner_guilds = tuple([int(i) for i in owner_guilds])
     log.debug(owner_guilds)
 
-    client = commands.Bot(help_command=None, command_prefix="!", intents=discord.Intents.none())  # Setting prefix
+    client = commands.Bot(help_command=None, command_prefix="!", intents=discord.Intents.all(), application_id="1135592064852181062")  # Setting prefix
 
     _embed_template = discord.Embed(
         title="Title!",
@@ -140,7 +140,10 @@ try:
 
         @discord.ui.button(label="Winner A", style=discord.ButtonStyle.blurple)
         async def winner_a(self, interaction, button):
-            self.team1[interaction.user.id] = 1
+            if interaction in self.team1:
+                self.team1[interaction] = 1
+            else:
+                self.team2[interaction] = 1
 
             winner = self.check_winner()
 
@@ -158,9 +161,12 @@ try:
             await self.update_embed(winner, new_elos[0], new_elos[1])
 
 
-        @discord.ui.button(label="Winner A", style=discord.ButtonStyle.blurple)
+        @discord.ui.button(label="Winner B", style=discord.ButtonStyle.blurple)
         async def winner_b(self, interaction, button):
-            self.team2[interaction.user.id] = 2
+            if interaction in self.team1:
+                self.team1[interaction] = 2
+            else:
+                self.team2[interaction] = 2
 
             winner = self.check_winner()
             if winner:
@@ -179,11 +185,9 @@ try:
 
         def check_winner(self):
 
-            votes = set(self.team1).union(set(self.team2))
-            if len(votes) == 1:
-                return list(votes)[0]
-            else:
-                return None
+            votes = set(self.team1.values()).union(set(self.team2.values()))
+
+            return list(votes)[0].pop() if len(votes) == 1 else None
 
 
 
