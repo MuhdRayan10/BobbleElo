@@ -94,11 +94,24 @@ try:
 
         return _error_template.copy()
 
+
+    def add_to_db(userids):
+        c.execute("SELECT userid FROM elo")
+        users = [u[0] for u in c.fetchall()]
+
+        for user in users:
+            if user not in ratings:
+                c.execute("INSERT INTO elo values(?,?)", (user, 1500))
+
+        db.commit()
+
+
     def calculate_rating(player1, player2, result):
-        outcome = 1 / (1 + (10**((player1 - player2) / 400)))
+        outcome = 1 / (1 + (10 ** ((player2 - player1) / 400)))
+
 
         rating1 = player1 + (32 * (result - outcome))
-        rating2 = player2 + (32 * ((not result if result != 0.5 else 0.5) - outcome))
+        rating2 = player2 + (32 * ((not result) - 1 + outcome))
 
         return round(rating1, 2), round(rating2, 2)
 
@@ -121,7 +134,7 @@ try:
 
     def update_ratings(users, ratings):
         for x in range(len(users)):
-            c.execute("UPDATE elo SET rating=:r WHERE userid=:u", {"r":ratings[0], "u":users[0]})
+            c.execute("UPDATE elo SET rating=:r WHERE userid=:u", {"r":ratings[x], "u":users[x]})
         db.commit()
 
     """
@@ -136,8 +149,6 @@ try:
             self.team1 = {d:0 for d in team1}
             self.team2 = {d:0 for d in team2}
 
-            self.player_count = len(self.team1) + len(self.team2)
-
         @discord.ui.button(label="Winner A", style=discord.ButtonStyle.blurple)
         async def winner_a(self, interaction, button):
             if interaction in self.team1:
@@ -151,10 +162,13 @@ try:
                 await self.winner(winner)
 
         async def winner(self, winner):
-            team1_elo = get_current_ratings(list(self.team1.keys()))
-            team2_elo = get_current_ratings(list(self.team2.keys()))
+            t1, t2 = list(self.team1.keys()), list(self.team2.keys())
 
-            new_elos = calculate_team_rating(team1_elo, team2_elo, winner if winner == 1 else 0)
+            add_to_db(t1+t2)
+            team1_elo = get_current_ratings(t1)
+            team2_elo = get_current_ratings(t2)
+
+            new_elos = calculate_team_rating(team1_elo.values(), team2_elo.values(), winner if winner == 1 else 0)
 
             update_ratings(list(team1_elo) + list(team2_elo), new_elos[0] + new_elos[1])
 
@@ -187,7 +201,7 @@ try:
 
             votes = set(self.team1.values()).union(set(self.team2.values()))
 
-            return list(votes)[0].pop() if len(votes) == 1 else None
+            return list(votes)[0] if len(votes) == 1 else None
 
 
 
