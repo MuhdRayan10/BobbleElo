@@ -2,10 +2,12 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 from backend import log, embed_template, error_template, gen_game_id, InitializeGame, match_result
+import aiosqlite
+
 
 class Main(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+    def __init__(self, client):
+        self.client = client
 
     @app_commands.command(name="create-game")
     async def create_game(self, interaction):
@@ -38,6 +40,26 @@ class Main(commands.Cog):
 
 
 
+    @app_commands.command(name="leaderboard")
+    async def leaderboard(self, interaction, amount: int = 10):
+        if amount > 25:
+            amount = 25
+        elif amount < 1:
+            amount = 1
+
+        db = await aiosqlite.connect("data.db")
+        cursor = await db.execute("SELECT * FROM eco ORDER BY rating DESC LIMIT ?", (amount,))
+        res = await cursor.fetchall()
+        # res format - [(user_id, rating), (user_id, rating), ...]
+
+        embed = embed_template()
+        embed.title = "Leaderboard"
+
+        for i, (user_id, rating) in enumerate(res):
+            user = await self.client.fetch_user(user_id)
+            embed.add_field(name=f"#{i+1} {user.name}", value=f"Rating: {rating}", inline=False)
+
+        await interaction.response.send_message(embed=embed)
 
 
 
