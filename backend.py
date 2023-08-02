@@ -200,6 +200,8 @@ class Game(View):
 
         winner = self.check_winner()
 
+        print([user for user, x in self.team1.items() + self.team2.items() if x])
+
         if winner:
             await self.winner(winner)
 
@@ -216,17 +218,21 @@ class Game(View):
 
         await self.update_embed(winner, new_elo[0], new_elo[1])
 
+
+
     @discord.ui.button(label="Winner B", style=discord.ButtonStyle.blurple)
     async def winner_b(self, interaction, _):
         print("vote for b")
-        await interaction.response.defer()
 
         if interaction.user.id in self.team1:
             self.team1[interaction.user.id] = 2
         else:
             self.team2[interaction.user.id] = 2
 
+        print("sending msg")
         await interaction.response.send_message("You have voted for Team B", ephemeral=True)
+
+        print([user for user, x in self.team1.items() + self.team2.items() if x])
 
         winner = self.check_winner()
         if winner:
@@ -235,7 +241,7 @@ class Game(View):
     async def update_embed(self, w, team1, team2):
         print("uwu")
         embed = embed_template()
-        embed.title = f"Team {'A' if w else 'B'} wins"
+        embed.title = f"Team {'A' if w==1 else 'B'} wins"
 
         # Getting the new player scores
         t1, t2 = list(self.team1.keys()), list(self.team2.keys())
