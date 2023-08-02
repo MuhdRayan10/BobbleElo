@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-from backend import log, embed_template, error_template, gen_game_id, InitializeGame
+from backend import log, embed_template, error_template, gen_game_id, InitializeGame, match_result
 
 class Main(commands.Cog):
     def __init__(self, bot):
@@ -30,6 +30,21 @@ class Main(commands.Cog):
 
         print("a")
         await interaction.edit_original_response(embed=embed, view=view)
+
+    @app_commands.command(name='add-match')
+    async def add_match(self, interaction, winner:int, player1:discord.User, player2:discord.User, player3:discord.User=None, player4:discord.User=None):
+        match_result(interaction, player1, player2, player3, player4, winner)
+
+
+
+
+
+
+
+
+
+
+
 
 
 async def setup(bot):

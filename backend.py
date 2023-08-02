@@ -137,6 +137,29 @@ try:
             c.execute("UPDATE elo SET rating=:r WHERE userid=:u", {"r":ratings[x], "u":users[x]})
         db.commit()
 
+    async def match_result(interaction, player1, player2, player3, player4, winner):
+        print("x")
+
+        users_1, users_2 = [player.id for player in [player1, player3] if player], [player.id for player in [player2, player4] if player]
+
+        add_to_db(users_1+users_2)
+
+        if interaction.user.id not in [984245773887766551]:
+            await interaction.response.send_message("no perms dude, sorry :sweat_smile:")
+            return
+
+        team1 = get_current_ratings(users_1)
+        team2 = get_current_ratings(users_2)
+
+        new_elos = calculate_team_rating(team1.values(), team2.values(), winner)
+
+        update_ratings(users_1+users_2, new_elos[0]+new_elos[1])
+
+        await interaction.response.send_message("Done!!!")
+
+
+
+
     """
         BUTTON CLASSES
     """
@@ -146,18 +169,18 @@ try:
             super().__init__(*items)
             self.msg = msg
 
-            print('view initialized')
-
             self.team1 = {d:0 for d in team1}
             self.team2 = {d:0 for d in team2}
 
         @discord.ui.button(label="Winner A", style=discord.ButtonStyle.blurple)
         async def winner_a(self, interaction, button):
-            print('a by', interaction.user.id)
+
             if interaction.user.id in self.team1:
                 self.team1[interaction.user.id] = 1
             else:
                 self.team2[interaction.user.id] = 1
+
+            await interaction.response.send_message("You have voted for Team A!", ephemeral=True)
 
             winner = self.check_winner()
 
@@ -165,6 +188,7 @@ try:
                 await self.winner(winner)
 
         async def winner(self, winner):
+            print('someone won lol')
             t1, t2 = list(self.team1.keys()), list(self.team2.keys())
 
             add_to_db(t1+t2)
@@ -180,10 +204,14 @@ try:
 
         @discord.ui.button(label="Winner B", style=discord.ButtonStyle.blurple)
         async def winner_b(self, interaction, button):
+            await interaction.response.defer()
+
             if interaction.user.id in self.team1:
                 self.team1[interaction.user.id] = 2
             else:
                 self.team2[interaction.user.id] = 2
+
+            await interaction.response.send_message("You have voted for Team B", ephemeral=True)
 
             winner = self.check_winner()
             if winner:
@@ -192,10 +220,15 @@ try:
         async def update_embed(self, w, team1, team2):
             embed = embed_template()
 
+            print("uwu")
+
             embed.title(f"Team {'A' if w else 'B'} wins!!!")
 
             t1, t2 = list(self.team1.keys()), list(self.team2.keys())
-            embed.add_field(name="Team A", value=f'\n{"⬆️" if w == 1 else "⬇️"}'.join([f'<@{t1[x]}> (`{team1[x]}`)' for x in range(len(t1))]))
+            print(t1, t2)
+            s1 = f'\n{"⬆️" if w == 1 else "⬇️"}'.join([f'<@{t1[x]}> (`{team1[x]}`)' for x in range(len(t1))])
+            print(s1)
+            embed.add_field(name="Team A", value=s1)
             embed.add_field(name="Team B", value=f'\n{"⬆️" if w == 2 else "⬇️"}'.join([f'<@{t2[x]}> (`{team2[x]}`)' for x in range(len(t2))]))
 
             await self.msg.edit(embed=embed, view=None)
@@ -264,12 +297,14 @@ try:
 
         @discord.ui.button(label="Start Game", style=discord.ButtonStyle.green)
         async def start_game(self, interaction, _):
+            await interaction.response.defer()
+
             if interaction.user.id != self.creator:
-                await interaction.response.send_message("Shh, only the person who created this match can start the game!", ephemeral=True)
+                await interaction.followup.send("Shh, only the person who created this match can start the game!", ephemeral=True)
                 return
 
             if not self.team1 or not self.team2:
-                await interaction.response.send_message("You need at least 1 players in each team to start the game!", ephemeral=True)
+                await interaction.followup.send("You need at least 1 players in each team to start the game!", ephemeral=True)
                 return
 
             print('starting game?')
@@ -279,8 +314,10 @@ try:
 
         @discord.ui.button(label="Cancel", style=discord.ButtonStyle.red)
         async def cancel_game(self, interaction, _):
+            await interaction.response.defer()
+
             if interaction.user.id != self.creator:
-                await interaction.response.send_message("Shh, only the person who created this match can cancel the game!", ephemeral=True)
+                await interaction.followup.send("Shh, only the person who created this match can cancel the game!", ephemeral=True)
                 return
 
             await self.msg.delete()
