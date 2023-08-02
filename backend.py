@@ -169,20 +169,15 @@ async def match_result(interaction, player1, player2, player3, player4, winner):
 """
 
 class LeaveTeam(View):
-    def __init__(self, team, msg, *items):
+    def __init__(self, team, func, *items):
         super().__init__(*items)
-        self.msg = msg
         self.team = team
+
+        self.remove_func = func
 
     @discord.ui.button(label="Leave Team", style=discord.ButtonStyle.red)
     async def leave_team(self, interaction, _):
-        if interaction.user.id in self.team:
-            self.team.remove(interaction.user.id)
-            await interaction.response.send_message("You have left the team!", ephemeral=True)
-            await self.msg.edit(embed=embed_template().add_field(name="Team", value=self.team))
-        else:
-            await interaction.response.send_message("You are not in the team!", ephemeral=True)
-
+        await self.remove_func(interaction, interaction.user.id, self.team)
 
 
 class Game(View):
@@ -223,6 +218,7 @@ class Game(View):
 
     @discord.ui.button(label="Winner B", style=discord.ButtonStyle.blurple)
     async def winner_b(self, interaction, _):
+        print("vote for b")
         await interaction.response.defer()
 
         if interaction.user.id in self.team1:
@@ -292,7 +288,7 @@ class InitializeGame(View):
         else:
             button.disabled = True
 
-        await interaction.response.send_message("You have joined Team A!", ephemeral=True, view=LeaveTeam())
+        await interaction.response.send_message("You have joined Team A!", ephemeral=True, view=LeaveTeam(self.team1, self.remove_from_team))
 
         if team_length != len(self.team1):
             await self.update_embed()
@@ -310,7 +306,7 @@ class InitializeGame(View):
             button.disabled = True
 
 
-        await interaction.response.send_message("You have joined Team B!", ephemeral=True, view=LeaveTeam())
+        await interaction.response.send_message("You have joined Team B!", ephemeral=True, view=LeaveTeam(self.team2, self.remove_from_team))
 
         if team_length != len(self.team2):
             await self.update_embed()
@@ -356,10 +352,6 @@ class InitializeGame(View):
             return
 
         await self.msg.delete()
-
-
-
-
 
 
 
