@@ -176,7 +176,8 @@ class LeaveTeam(View):
         self.remove_func = func
 
     @discord.ui.button(label="Leave Team", style=discord.ButtonStyle.red)
-    async def leave_team(self, interaction, _):
+    async def leave_team(self, interaction, button):
+        button.disabled = True
         await self.remove_func(interaction, interaction.user.id, self.team)
 
 
@@ -200,7 +201,7 @@ class Game(View):
 
         winner = self.check_winner()
 
-        print([user for user, x in self.team1.items() + self.team2.items() if x])
+        print([user for user, x in list(self.team1.items()) + list(self.team2.items()) if x])
 
         if winner:
             await self.winner(winner)
@@ -232,7 +233,7 @@ class Game(View):
         print("sending msg")
         await interaction.response.send_message("You have voted for Team B", ephemeral=True)
 
-        print([user for user, x in self.team1.items() + self.team2.items() if x])
+        print([user for user, x in list(self.team1.items()) + list(self.team2.items()) if x])
 
         winner = self.check_winner()
         if winner:
@@ -245,6 +246,8 @@ class Game(View):
 
         # Getting the new player scores
         t1, t2 = list(self.team1.keys()), list(self.team2.keys())
+
+        print(t1, t2, team1, team2)
 
         # May god help whoever has to debug this
         embed.add_field(
@@ -326,7 +329,7 @@ class InitializeGame(View):
 
         await self.msg.edit(embed=embed)
 
-    @discord.ui.button(label="Start Game", style=discord.ButtonStyle.green, row=2)
+    @discord.ui.button(label="Start", style=discord.ButtonStyle.green, row=2)
     async def start_game(self, interaction, _):
         await interaction.response.defer()
 
