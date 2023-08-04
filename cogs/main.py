@@ -34,6 +34,7 @@ class Main(commands.Cog):
 
     @app_commands.command(name="leaderboard")
     async def leaderboard(self, interaction, amount: int = 10):
+        await interaction.response.defer()
         if amount > 25:
             amount = 25
         elif amount < 1:
@@ -56,9 +57,8 @@ class Main(commands.Cog):
             print(user)
             embed.add_field(name=f"#{i+1} `{user.name}`", value=f"Rating: {rating}", inline=False)
 
-        print('made embed')
 
-        await interaction.response.send_message(embed=embed)
+        await interaction.followup.send(embed=embed)
 
 
 
