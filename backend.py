@@ -143,16 +143,16 @@ def update_ratings(users, ratings):
 
 
 async def match_result(interaction, player1, player2, player3, player4, winner):
-    print("x")
+
+    if interaction.user.id not in [984245773887766551, 837584356988944396]:
+        await interaction.response.send_message("no perms dude, sorry :sweat_smile:")
+        return
+
 
     users_1, users_2 = [player.id for player in [player1, player3] if player], [player.id for player in
                                                                                 [player2, player4] if player]
 
     add_to_db(users_1 + users_2)
-
-    if interaction.user.id not in [984245773887766551]:
-        await interaction.response.send_message("no perms dude, sorry :sweat_smile:")
-        return
 
     team1 = get_current_ratings(users_1)
     team2 = get_current_ratings(users_2)
@@ -252,11 +252,11 @@ class Game(View):
         # May god help whoever has to debug this
         embed.add_field(
             name="Team A",
-            value=f'\n{"⬆️" if w == 1 else "⬇️"}'.join([f'<@{t1[x]}> (`{team1[x]}`)' for x in range(len(t1))])
+            value='\n'.join([f'{"⬆️" if w == 1 else "⬇️"} <@{t1[x]}> (`{team1[x]}`)' for x in range(len(t1))])
         )
         embed.add_field(
             name="Team B",
-            value=f'\n{"⬆️" if w == 2 else "⬇️"}'.join([f'<@{t2[x]}> (`{team2[x]}`)' for x in range(len(t2))])
+            value='\n'.join([f'{"⬆️" if w == 2 else "⬇️"} <@{t2[x]}> (`{team2[x]}`)' for x in range(len(t2))])
         )
 
         await self.msg.edit(embed=embed, view=None)
@@ -273,7 +273,7 @@ class InitializeGame(View):
         super().__init__(*items)
         self.msg = msg
 
-        self.team1, self.team2 = set(), set()
+        self.team1, self.team2 = [], []
         self.creator = creator
         self.game_id = gen_game_id()
 
@@ -292,15 +292,15 @@ class InitializeGame(View):
             return
 
         team_length = len(self.team1)
-        if team_length < 4:
-            self.team1.add(interaction.user.id)
+        if team_length < 4 and interaction.user.id not in self.team1:
+            self.team1.append(interaction.user.id)
+            await self.update_embed()
         else:
             button.disabled = True
 
         await interaction.response.send_message("You have joined Team A!", ephemeral=True, view=LeaveTeam(self.team1, self.remove_from_team))
 
-        if team_length != len(self.team1):
-            await self.update_embed()
+
 
     @discord.ui.button(label="Team B", style=discord.ButtonStyle.blurple)
     async def join_team2(self, interaction, button):
@@ -309,16 +309,14 @@ class InitializeGame(View):
             await interaction.response.send_message("You are already in another team", ephemeral=True)
             return
 
-        if team_length < 4:
-            self.team2.add(interaction.user.id)
+        if team_length < 4 and interaction.user.id not in self.team2:
+            self.team2.append(interaction.user.id)
+            await self.update_embed()
         else:
             button.disabled = True
 
-
         await interaction.response.send_message("You have joined Team B!", ephemeral=True, view=LeaveTeam(self.team2, self.remove_from_team))
 
-        if team_length != len(self.team2):
-            await self.update_embed()
 
     async def update_embed(self):
         embed = embed_template()

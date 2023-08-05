@@ -45,15 +45,16 @@ class Main(commands.Cog):
         res = cursor.fetchall()
         # res format - [(user_id, rating), (user_id, rating), ...]
 
-        print('fetched data', res)
+        print('fetched data', len(res))
 
         embed = embed_template()
         embed.title = "Leaderboard"
 
 
+
         for i, (user_id, rating) in enumerate(res):
             user = await self.client.fetch_user(user_id)
-            print(user)
+            print(user, i)
             embed.add_field(name=f"#{i+1} `{user.name}`", value=f"Rating: {rating}", inline=False)
 
         print('made embed')
